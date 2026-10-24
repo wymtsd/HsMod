@@ -1,0 +1,131 @@
+name: Sync Build Release
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
+  push:
+    branches: [bepinex5]
+    paths:
+      - .github/workflows/sync-release.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hsmod-sync-release
+  cancel-in-progress: false
+
+jobs:
+  sync-build-release:
+    if: github.repository == 'wymtsd/HsMod' && github.ref == 'refs/heads/bepinex5'
+    runs-on: windows-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v5
+        with:
+          ref: bepinex5
+          fetch-depth: 0
+
+      - name: Sync upstream and check published version
+        id: upstream
+        run: |
+          $ErrorActionPreference = 'Stop'
+          function Git {
+            & git @args
+            if ($LASTEXITCODE -ne 0) { throw "git failed: $args" }
+          }
+          Git config user.name 'github-actions[bot]'
+          Git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          Git fetch https://github.com/Pik-4/HsMod.git bepinex5
+          $upstream = (Git rev-parse FETCH_HEAD).Trim()
+          # A normal merge preserves local changes and stops on conflicts.
+          Git merge --no-edit $upstream
+          Git push origin HEAD:refs/heads/bepinex5
+          $target = (Git rev-parse HEAD).Trim()
+          $tag = "upstream-$upstream"
+          "sha=$upstream" >> $env:GITHUB_OUTPUT
+          "target=$target" >> $env:GITHUB_OUTPUT
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          # Distinguish a missing release from an API or permissions failure.
+          $headers = @{
+            Authorization = "Bearer $env:GH_TOKEN"
+            Accept = 'application/vnd.github+json'
+          }
+          $response = Invoke-WebRequest -Uri "https://api.github.com/repos/$env:GH_REPO/releases/tags/$tag" -Headers $headers -SkipHttpErrorCheck
+          if ($response.StatusCode -eq 404) {
+            "build=true" >> $env:GITHUB_OUTPUT
+          } elseif ($response.StatusCode -eq 200) {
+            $release = $response.Content | ConvertFrom-Json
+            $dll = @($release.assets | Where-Object { $_.name -eq 'HsMod.dll' })
+            $needed = $release.draft -or $dll.Count -eq 0
+            "build=$($needed.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+            if (-not $needed) { "Already published $tag; no build needed." >> $env:GITHUB_STEP_SUMMARY }
+          } else {
+            throw "Release lookup failed with HTTP $($response.StatusCode)"
+          }
+
+      - name: Setup .NET
+        if: steps.upstream.outputs.build == 'true'
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 8.x
+
+      - name: Restore and build
+        if: steps.upstream.outputs.build == 'true'
+        run: |
+          dotnet restore --locked-mode
+          if ($LASTEXITCODE -ne 0) { throw 'Restore failed' }
+          dotnet build --configuration Release --no-restore -p:PostBuildEvent=
+          if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
+          if (-not (Test-Path -LiteralPath HsMod/Release/HsMod.dll)) { throw 'HsMod.dll was not produced' }
+          $hash = (Get-FileHash -LiteralPath HsMod/Release/HsMod.dll -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  HsMod.dll" | Set-Content -LiteralPath HsMod/Release/SHA256SUMS.txt -Encoding utf8
+
+      - name: Save DLL as workflow artifact
+        if: steps.upstream.outputs.build == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: HsMod-${{ steps.upstream.outputs.sha }}
+          path: |
+            HsMod/Release/HsMod.dll
+            HsMod/Release/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Publish unofficial release
+        if: steps.upstream.outputs.build == 'true'
+        env:
+          UPSTREAM_SHA: ${{ steps.upstream.outputs.sha }}
+          RELEASE_TAG: ${{ steps.upstream.outputs.tag }}
+          TARGET_SHA: ${{ steps.upstream.outputs.target }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $notes = @(
+            'Unofficial automated build of Pik-4/HsMod (bepinex5).'
+            ''
+            "Upstream commit: https://github.com/Pik-4/HsMod/commit/$env:UPSTREAM_SHA"
+            "Build commit: https://github.com/$env:GH_REPO/commit/$env:TARGET_SHA"
+            "Build log: https://github.com/$env:GH_REPO/actions/runs/$env:GITHUB_RUN_ID"
+            ''
+            'Compilation succeeded. In-game compatibility has not been tested.'
+            'License: AGPL-3.0; source is available at the build commit above.'
+          )
+          $notes | Set-Content -LiteralPath "$env:RUNNER_TEMP/release-notes.md" -Encoding utf8
+          gh release view "$env:RELEASE_TAG" --json id *> $null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create "$env:RELEASE_TAG" --target "$env:TARGET_SHA" --draft --title "HsMod unofficial build $($env:UPSTREAM_SHA.Substring(0, 12))" --notes-file "$env:RUNNER_TEMP/release-notes.md"
+            if ($LASTEXITCODE -ne 0) { throw 'Could not create draft release' }
+          }
+          gh release upload "$env:RELEASE_TAG" HsMod/Release/HsMod.dll HsMod/Release/SHA256SUMS.txt --clobber
+          if ($LASTEXITCODE -ne 0) { throw 'Could not upload release files' }
+          gh release edit "$env:RELEASE_TAG" --draft=false --latest
+          if ($LASTEXITCODE -ne 0) { throw 'Could not publish release' }
+          "Published: https://github.com/$env:GH_REPO/releases/tag/$env:RELEASE_TAG" >> $env:GITHUB_STEP_SUMMARY
