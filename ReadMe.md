@@ -5,7 +5,7 @@
 本仓库是 [Pik-4/HsMod](https://github.com/Pik-4/HsMod) 的个人 Fork，提供 **非官方自动构建**。原项目说明保留在下方。
 
 - **下载 DLL**：[最新 Release](https://github.com/wymtsd/HsMod/releases/latest)，在 Assets 中下载 `HsMod.dll`；`SHA256SUMS.txt` 用于校验文件。
-- **检查频率**：每小时第 17 分钟计划检查上游 `bepinex5` 分支；GitHub 调度可能延迟。
+- **检查频率**：每小时整点计划检查上游 `bepinex5` 分支；GitHub 调度可能延迟。
 - **同步与发布**：合并上游新提交，保留本 Fork 的 `.github/workflows` 配置；版本尚未发布时自动编译，并在成功后发布 DLL。已发布版本跳过构建。
 - **手动检查**：打开 [Sync Build Release](https://github.com/wymtsd/HsMod/actions/workflows/sync-release.yml)，点击 **Run workflow**，选择 `bepinex5` 并运行。手动运行也会跳过已发布版本。
 - **版本追溯**：Release 标签为 `upstream-<上游完整提交 SHA>`，发布说明包含上游提交、实际构建提交和运行日志链接。
