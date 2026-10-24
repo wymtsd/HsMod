@@ -200,6 +200,79 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+      - name: Prepare bilingual release notes
+        env:
+          UPSTREAM_SHA: ${{ steps.upstream.outputs.sha }}
+          RELEASE_TAG: ${{ steps.upstream.outputs.tag }}
+          TARGET_SHA: ${{ steps.upstream.outputs.target }}
+          BEP_VERSION: ${{ steps.upstream.outputs.bep }}
+          BUILD_NEEDED: ${{ steps.upstream.outputs.build }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $buildCommit = $env:TARGET_SHA
+          $buildLog = "https://github.com/$env:GH_REPO/actions/runs/$env:GITHUB_RUN_ID"
+          $existingJson = gh release view "$env:RELEASE_TAG" --json body,targetCommitish
+          $exists = $LASTEXITCODE -eq 0
+          if ($exists) {
+            $existing = $existingJson | ConvertFrom-Json
+            if ($env:BUILD_NEEDED -ne 'true') {
+              $match = [regex]::Match($existing.body, 'https://github\.com/[^/\s]+/[^/\s]+/commit/([a-f0-9]{40})')
+              # Use the fork's original build commit, not the upstream commit or this notes-only update.
+              $forkPattern = 'https://github\.com/' + [regex]::Escape($env:GH_REPO) + '/commit/([a-f0-9]{40})'
+              $match = [regex]::Match($existing.body, $forkPattern)
+              if (-not $match.Success) { throw 'Original build commit missing from release notes' }
+              $buildCommit = $match.Groups[1].Value
+              $logPattern = 'https://github\.com/' + [regex]::Escape($env:GH_REPO) + '/actions/runs/[0-9]+'
+              $logMatch = [regex]::Match($existing.body, $logPattern)
+              if (-not $logMatch.Success) { throw 'Original build log missing from release notes' }
+              $buildLog = $logMatch.Value
+            }
+          }
+          $notes = @(
+            '## English'
+            ''
+            'Unofficial automated Windows x64 bundle of Pik-4/HsMod (bepinex5).'
+            ''
+            '- Download **HsMod-Windows-x64.zip** from Assets below.'
+            '- Close the game, extract all ZIP contents directly into the folder containing **Hearthstone.exe**, then launch through Battle.net.'
+            '- Includes HsMod, official stable BepInEx 5 Windows x64, required unstripped corlib DLLs, and preconfigured Doorstop paths.'
+            '- Back up existing mods first. No personal game configuration, logs, or login tokens are included.'
+            '- **HsMod.dll** is also available for DLL-only upgrades; **SHA256SUMS.txt** contains file checksums.'
+            ''
+            "BepInEx version: **$env:BEP_VERSION**"
+            "Upstream commit: https://github.com/Pik-4/HsMod/commit/$env:UPSTREAM_SHA"
+            "Build commit: https://github.com/$env:GH_REPO/commit/$buildCommit"
+            "Build log: $buildLog"
+            ''
+            'Compilation and package structure checks passed. In-game startup and compatibility have not been tested.'
+            'HsMod license: AGPL-3.0; source is available at the build commit above. Bundled components retain their respective licenses.'
+            ''
+            '---'
+            ''
+            '## 简体中文'
+            ''
+            'Pik-4/HsMod（bepinex5）的 Windows x64 非官方自动构建整合包。'
+            ''
+            '- 在下方 Assets 下载 **HsMod-Windows-x64.zip**。'
+            '- 关闭游戏，将 ZIP 内全部内容直接解压到 **Hearthstone.exe 所在目录**，然后通过战网启动。'
+            '- 已包含 HsMod、官方 BepInEx 5 稳定版 Windows x64、必需的 unstripped corlib DLL，以及预设的 Doorstop 路径。'
+            '- 已有 Mod 时请先备份。包内不含个人游戏配置、日志或登录令牌。'
+            '- **HsMod.dll** 用于单独升级插件；**SHA256SUMS.txt** 提供文件校验值。'
+            ''
+            "BepInEx 版本：**$env:BEP_VERSION**"
+            "上游提交：https://github.com/Pik-4/HsMod/commit/$env:UPSTREAM_SHA"
+            "构建提交：https://github.com/$env:GH_REPO/commit/$buildCommit"
+            "构建日志：$buildLog"
+            ''
+            '编译及包结构检查已通过，尚未实际启动游戏验证，不能保证所有客户端版本兼容。'
+            'HsMod 采用 AGPL-3.0 许可，源码见上方构建提交；整合的各组件保留各自许可证。'
+          )
+          $notes | Set-Content -LiteralPath "$env:RUNNER_TEMP/release-notes.md" -Encoding utf8
+          if ($exists) {
+            gh release edit "$env:RELEASE_TAG" --notes-file "$env:RUNNER_TEMP/release-notes.md"
+            if ($LASTEXITCODE -ne 0) { throw 'Could not update release notes' }
+          }
+
       - name: Publish unofficial release
         if: steps.upstream.outputs.build == 'true'
         env:
@@ -208,18 +281,6 @@ jobs:
           TARGET_SHA: ${{ steps.upstream.outputs.target }}
         run: |
           $ErrorActionPreference = 'Stop'
-          $notes = @(
-            '下载 HsMod-Windows-x64.zip，解压到 Hearthstone.exe 所在目录后通过战网启动。'
-            'Unofficial automated build of Pik-4/HsMod (bepinex5).'
-            ''
-            "Upstream commit: https://github.com/Pik-4/HsMod/commit/$env:UPSTREAM_SHA"
-            "Build commit: https://github.com/$env:GH_REPO/commit/$env:TARGET_SHA"
-            "Build log: https://github.com/$env:GH_REPO/actions/runs/$env:GITHUB_RUN_ID"
-            ''
-            'Compilation succeeded. In-game compatibility has not been tested.'
-            'License: AGPL-3.0; source is available at the build commit above.'
-          )
-          $notes | Set-Content -LiteralPath "$env:RUNNER_TEMP/release-notes.md" -Encoding utf8
           gh release view "$env:RELEASE_TAG" --json id *> $null
           if ($LASTEXITCODE -ne 0) {
             gh release create "$env:RELEASE_TAG" --target "$env:TARGET_SHA" --draft --title "HsMod Windows x64 bundle $($env:UPSTREAM_SHA.Substring(0, 12))" --notes-file "$env:RUNNER_TEMP/release-notes.md"
