@@ -3,7 +3,7 @@ name: Sync Build Release
 on:
   workflow_dispatch:
   schedule:
-    - cron: '17 * * * *'
+    - cron: '0 * * * *'
   push:
     branches: [bepinex5]
     paths:
