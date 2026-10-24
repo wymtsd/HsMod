@@ -237,14 +237,6 @@ jobs:
             '- Back up existing mods first. No personal game configuration, logs, or login tokens are included.'
             '- **HsMod.dll** is also available for DLL-only upgrades; **SHA256SUMS.txt** contains file checksums.'
             ''
-            "BepInEx version: **$env:BEP_VERSION**"
-            "Upstream commit: https://github.com/Pik-4/HsMod/commit/$env:UPSTREAM_SHA"
-            "Build commit: https://github.com/$env:GH_REPO/commit/$buildCommit"
-            "Build log: $buildLog"
-            ''
-            'Compilation and package structure checks passed. In-game startup and compatibility have not been tested.'
-            'HsMod license: AGPL-3.0; source is available at the build commit above. Bundled components retain their respective licenses.'
-            ''
             'Pik-4/HsMod（bepinex5）的 Windows x64 非官方自动构建整合包。'
             ''
             '- 在下方 Assets 下载 **HsMod-Windows-x64.zip**。'
@@ -253,12 +245,20 @@ jobs:
             '- 已有 Mod 时请先备份。包内不含个人游戏配置、日志或登录令牌。'
             '- **HsMod.dll** 用于单独升级插件；**SHA256SUMS.txt** 提供文件校验值。'
             ''
-            "BepInEx 版本：**$env:BEP_VERSION**"
-            "上游提交：https://github.com/Pik-4/HsMod/commit/$env:UPSTREAM_SHA"
-            "构建提交：https://github.com/$env:GH_REPO/commit/$buildCommit"
-            "构建日志：$buildLog"
+            "BepInEx version: **$env:BEP_VERSION**\"
+            "Upstream commit: [Pik-4@$($env:UPSTREAM_SHA.Substring(0,7))](https://github.com/Pik-4/HsMod/commit/$env:UPSTREAM_SHA)\"
+            "Build commit: [$($buildCommit.Substring(0,7))](https://github.com/$env:GH_REPO/commit/$buildCommit)\"
+            "Build log: [$buildLog]($buildLog)"
             ''
-            '编译及包结构检查已通过，尚未实际启动游戏验证，不能保证所有客户端版本兼容。'
+            'Compilation and package structure checks passed. In-game startup and compatibility have not been tested.\'
+            'HsMod license: AGPL-3.0; source is available at the build commit above. Bundled components retain their respective licenses.'
+            ''
+            "BepInEx 版本：**$env:BEP_VERSION**\"
+            "上游提交：[Pik-4@$($env:UPSTREAM_SHA.Substring(0,7))](https://github.com/Pik-4/HsMod/commit/$env:UPSTREAM_SHA)\"
+            "构建提交：[$($buildCommit.Substring(0,7))](https://github.com/$env:GH_REPO/commit/$buildCommit)\"
+            "构建日志：[$buildLog]($buildLog)"
+            ''
+            '编译及包结构检查已通过，尚未实际启动游戏验证，不能保证所有客户端版本兼容。\'
             'HsMod 采用 AGPL-3.0 许可，源码见上方构建提交；整合的各组件保留各自许可证。'
           )
           $notes | Set-Content -LiteralPath "$env:RUNNER_TEMP/release-notes.md" -Encoding utf8
