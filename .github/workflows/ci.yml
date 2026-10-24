@@ -1,6 +1,7 @@
 name: Auto Build Test
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "bepinex5" ]
   pull_request:
