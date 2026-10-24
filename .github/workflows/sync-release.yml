@@ -39,15 +39,26 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           function Git {
-            & git @args
+            & git.exe @args
             if ($LASTEXITCODE -ne 0) { throw "git failed: $args" }
           }
           Git config user.name 'github-actions[bot]'
           Git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           Git fetch https://github.com/Pik-4/HsMod.git bepinex5
           $upstream = (Git rev-parse FETCH_HEAD).Trim()
-          # A normal merge preserves local changes and stops on conflicts.
-          Git merge --no-edit $upstream
+          git.exe merge-base --is-ancestor $upstream HEAD
+          $ancestry = $LASTEXITCODE
+          if ($ancestry -gt 1) { throw 'Could not check upstream ancestry' }
+          if ($ancestry -eq 1) {
+            # Keep this fork's workflow files; sync all other upstream changes.
+            # GITHUB_TOKEN cannot push changes to workflow files.
+            git.exe merge --no-commit --no-ff $upstream
+            if ($LASTEXITCODE -gt 1) { throw 'Upstream merge failed' }
+            Git restore --source=HEAD --staged --worktree -- .github/workflows
+            $conflicts = @(Git diff --name-only --diff-filter=U)
+            if ($conflicts.Count -gt 0) { throw "Merge conflicts: $conflicts" }
+            Git commit -m "Sync Pik-4/HsMod $upstream (preserve fork workflows)"
+          }
           Git push origin HEAD:refs/heads/bepinex5
           $target = (Git rev-parse HEAD).Trim()
           $tag = "upstream-$upstream"
