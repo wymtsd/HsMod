@@ -4,11 +4,14 @@
 
 本仓库是 [Pik-4/HsMod](https://github.com/Pik-4/HsMod) 的个人 Fork，提供 **非官方自动构建**。原项目说明保留在下方。
 
+- **下载整合包**：[最新 Release](https://github.com/wymtsd/HsMod/releases/latest) 的 Assets 中选择 `HsMod-Windows-x64.zip`。关闭游戏，把包内全部内容直接解压到 `Hearthstone.exe` 所在目录，再通过战网启动；无需另装 BepInEx 或手动修改 Doorstop 配置。已有 Mod 时请先备份。
+- **整合内容**：官方 BepInEx 5 最新稳定版 Windows x64、`HsMod.dll`、上游 Windows `unstripped_corlib` DLL、预设相对路径的 Doorstop 配置、安装说明和许可证。仅适用于 Windows x64；安装路径避免中文等非拉丁字符。已做结构检查，尚未实际启动游戏验证。
+- **隐私范围**：在 GitHub 临时构建环境中打包，仅使用公开上游文件与自动编译的 DLL，不读取用户电脑、个人游戏配置、日志或账号令牌；不上传 PDB。公开仓库及提交仍显示正常 GitHub 作者信息。
 - **下载 DLL**：[最新 Release](https://github.com/wymtsd/HsMod/releases/latest)，在 Assets 中下载 `HsMod.dll`；`SHA256SUMS.txt` 用于校验文件。
-- **检查频率**：每小时整点计划检查上游 `bepinex5` 分支；GitHub 调度可能延迟。
-- **同步与发布**：合并上游新提交，保留本 Fork 的 `.github/workflows` 配置；版本尚未发布时自动编译，并在成功后发布 DLL。已发布版本跳过构建。
+- **检查频率**：每小时整点计划检查上游 `bepinex5` 分支及官方 BepInEx 5 稳定版；GitHub 调度可能延迟。
+- **同步与发布**：合并上游新提交，保留本 Fork 的 `.github/workflows` 配置；任一上游版本更新时自动编译、检查并发布整合 ZIP 和单独 DLL。相同组合已发布时跳过构建。
 - **手动检查**：打开 [Sync Build Release](https://github.com/wymtsd/HsMod/actions/workflows/sync-release.yml)，点击 **Run workflow**，选择 `bepinex5` 并运行。手动运行也会跳过已发布版本。
-- **版本追溯**：Release 标签为 `upstream-<上游完整提交 SHA>`，发布说明包含上游提交、实际构建提交和运行日志链接。
+- **版本追溯**：整合包 Release 标签为 `bundle-v1-<上游完整提交 SHA>-<BepInEx 版本>-<发行文件 ID>`，发布说明包含上游提交、实际构建提交和运行日志链接。
 - **失败处理**：合并冲突或编译失败会停止流程，不发布新版本；查看 Actions 中失败步骤的日志。上游工作流变更需单独检查后更新本 Fork。
 - **定时任务维护**：公开仓库连续 60 天没有仓库活动时，GitHub 可能自动停用定时任务；届时在 Actions 中重新启用。参见 [GitHub 官方说明](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule)。
 
