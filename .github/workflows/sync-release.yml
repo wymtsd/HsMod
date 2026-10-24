@@ -229,8 +229,6 @@ jobs:
             }
           }
           $notes = @(
-            '## English'
-            ''
             'Unofficial automated Windows x64 bundle of Pik-4/HsMod (bepinex5).'
             ''
             '- Download **HsMod-Windows-x64.zip** from Assets below.'
@@ -246,10 +244,6 @@ jobs:
             ''
             'Compilation and package structure checks passed. In-game startup and compatibility have not been tested.'
             'HsMod license: AGPL-3.0; source is available at the build commit above. Bundled components retain their respective licenses.'
-            ''
-            '---'
-            ''
-            '## 简体中文'
             ''
             'Pik-4/HsMod（bepinex5）的 Windows x64 非官方自动构建整合包。'
             ''
