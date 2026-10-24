@@ -1,5 +1,21 @@
 # HsMod
 
+## 本 Fork：自动同步与 DLL 发布
+
+本仓库是 [Pik-4/HsMod](https://github.com/Pik-4/HsMod) 的个人 Fork，提供 **非官方自动构建**。原项目说明保留在下方。
+
+- **下载 DLL**：[最新 Release](https://github.com/wymtsd/HsMod/releases/latest)，在 Assets 中下载 `HsMod.dll`；`SHA256SUMS.txt` 用于校验文件。
+- **检查频率**：每小时第 17 分钟计划检查上游 `bepinex5` 分支；GitHub 调度可能延迟。
+- **同步与发布**：合并上游新提交，保留本 Fork 的 `.github/workflows` 配置；版本尚未发布时自动编译，并在成功后发布 DLL。已发布版本跳过构建。
+- **手动检查**：打开 [Sync Build Release](https://github.com/wymtsd/HsMod/actions/workflows/sync-release.yml)，点击 **Run workflow**，选择 `bepinex5` 并运行。手动运行也会跳过已发布版本。
+- **版本追溯**：Release 标签为 `upstream-<上游完整提交 SHA>`，发布说明包含上游提交、实际构建提交和运行日志链接。
+- **失败处理**：合并冲突或编译失败会停止流程，不发布新版本；查看 Actions 中失败步骤的日志。上游工作流变更需单独检查后更新本 Fork。
+- **定时任务维护**：公开仓库连续 60 天没有仓库活动时，GitHub 可能自动停用定时任务；届时在 Actions 中重新启用。参见 [GitHub 官方说明](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule)。
+
+自动构建通过只代表编译成功，不代表已验证游戏内兼容性。安装仍需按下方原项目说明配置 BepInEx 及相关依赖。源码与发布遵循原项目 AGPL-3.0 许可。
+
+---
+
 Hearthstone Modification based on BepInEx. The plugin source code is at [github.com/Pik-4/HsMod](https://github.com/Pik-4/HsMod). The plugin does not collect any information about you; the project follows AGPL-3.0 and is used for learning and research only.
 
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
