@@ -1,21 +1,23 @@
 # HsMod
 
-## 本 Fork：自动同步与 DLL 发布
+**English** | [简体中文](README.zh-CN.md)
 
-本仓库是 [Pik-4/HsMod](https://github.com/Pik-4/HsMod) 的个人 Fork，提供 **非官方自动构建**。原项目说明保留在下方。
+## This fork: automatic sync and releases
 
-- **下载整合包**：[最新 Release](https://github.com/wymtsd/HsMod/releases/latest) 的 Assets 中选择 `HsMod-Windows-x64.zip`。关闭游戏，把包内全部内容直接解压到 `Hearthstone.exe` 所在目录，再通过战网启动；无需另装 BepInEx 或手动修改 Doorstop 配置。已有 Mod 时请先备份。
-- **整合内容**：官方 BepInEx 5 最新稳定版 Windows x64、`HsMod.dll`、上游 Windows `unstripped_corlib` DLL、预设相对路径的 Doorstop 配置、安装说明和许可证。仅适用于 Windows x64；安装路径避免中文等非拉丁字符。已做结构检查，尚未实际启动游戏验证。
-- **隐私范围**：在 GitHub 临时构建环境中打包，仅使用公开上游文件与自动编译的 DLL，不读取用户电脑、个人游戏配置、日志或账号令牌；不上传 PDB。公开仓库及提交仍显示正常 GitHub 作者信息。
-- **下载 DLL**：[最新 Release](https://github.com/wymtsd/HsMod/releases/latest)，在 Assets 中下载 `HsMod.dll`；`SHA256SUMS.txt` 用于校验文件。
-- **检查频率**：每小时整点计划检查上游 `bepinex5` 分支及官方 BepInEx 5 稳定版；GitHub 调度可能延迟。
-- **同步与发布**：合并上游新提交，保留本 Fork 的 `.github/workflows` 配置；任一上游版本更新时自动编译、检查并发布整合 ZIP 和单独 DLL。相同组合已发布时跳过构建。
-- **手动检查**：打开 [Sync Build Release](https://github.com/wymtsd/HsMod/actions/workflows/sync-release.yml)，点击 **Run workflow**，选择 `bepinex5` 并运行。手动运行也会跳过已发布版本。
-- **版本追溯**：整合包 Release 标签为 `bundle-v1-<上游完整提交 SHA>-<BepInEx 版本>-<发行文件 ID>`，发布说明包含上游提交、实际构建提交和运行日志链接。
-- **失败处理**：合并冲突或编译失败会停止流程，不发布新版本；查看 Actions 中失败步骤的日志。上游工作流变更需单独检查后更新本 Fork。
-- **定时任务维护**：公开仓库连续 60 天没有仓库活动时，GitHub 可能自动停用定时任务；届时在 Actions 中重新启用。参见 [GitHub 官方说明](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule)。
+This personal fork of [Pik-4/HsMod](https://github.com/Pik-4/HsMod) provides **unofficial automated builds**.
 
-自动构建通过只代表编译成功，不代表已验证游戏内兼容性。安装仍需按下方原项目说明配置 BepInEx 及相关依赖。源码与发布遵循原项目 AGPL-3.0 许可。
+- **Windows bundle**: download `HsMod-Windows-x64.zip` from the [latest release](https://github.com/wymtsd/HsMod/releases/latest). Close the game, extract all contents directly into the folder containing `Hearthstone.exe`, then launch through Battle.net. No separate BepInEx installation or Doorstop editing is required. Back up existing mods first.
+- **Contents**: the latest official stable BepInEx 5 for Windows x64, HsMod DLL, upstream Windows unstripped corlib DLLs, preconfigured relative Doorstop paths, installation notes, and licenses. Windows x64 only; avoid non-Latin characters in the install path. Package structure is checked automatically; in-game startup has not been tested.
+- **Privacy**: packaging runs on a temporary GitHub runner using public upstream files and the compiled DLL. It does not read your computer, personal configuration, logs, or login tokens. PDB files are excluded. Public GitHub author metadata remains visible in commits.
+- **DLL-only download**: release assets also include `HsMod.dll` and `SHA256SUMS.txt`.
+- **Schedule**: check HsMod's `bepinex5` branch and official stable BepInEx 5 releases every hour on the hour. GitHub scheduling may be delayed.
+- **Sync and release**: merge upstream changes while preserving this fork's `.github/workflows`. New HsMod/BepInEx combinations trigger builds, package checks, and publication. Published combinations are skipped.
+- **Manual check**: open [Sync Build Release](https://github.com/wymtsd/HsMod/actions/workflows/sync-release.yml), choose **Run workflow**, select `bepinex5`, and run. Published combinations are still skipped.
+- **Traceability**: bundle tags follow `bundle-v1-<upstream SHA>-<BepInEx version>-<asset ID>`. Release notes link to upstream and build commits and run logs.
+- **Failures**: merge conflicts or build/package errors stop publication. Inspect the failed Actions step. Upstream workflow changes need separate review before adoption.
+- **Maintenance**: GitHub may disable scheduled workflows in public repositories after 60 days without repository activity. Re-enable the workflow in Actions if needed. See [GitHub documentation](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule).
+
+A successful build does not guarantee game compatibility. DLL-only installations still require the dependencies described below. HsMod source and releases retain the upstream AGPL-3.0 license.
 
 ---
 
@@ -30,9 +32,11 @@ Hearthstone Modification based on BepInEx. The plugin source code is at [github.
 
 HsMod primarily uses Simplified Chinese (简体中文); the English version may contain translation errors. You can edit the JSON files in `HsMod/Languages` and recompile to support your region's language. The plugin is not yet fully translated.
 
-**[Documentation Wiki](../../wiki)** covers installation, every setting, hotkeys and troubleshooting in detail.
+**[Documentation Wiki](https://github.com/Pik-4/HsMod/wiki)** covers installation, every setting, hotkeys and troubleshooting in detail.
 
 ## Quick start (Windows)
+
+For the preconfigured Windows bundle, follow the instructions above. For DLL-only installation:
 
 1. Download `HsMod.dll` from Releases (or [build it](#building-from-source)).
 2. Extract [BepInEx x64](https://github.com/BepInEx/BepInEx/releases) into the Hearthstone folder.
@@ -40,7 +44,7 @@ HsMod primarily uses Simplified Chinese (简体中文); the English version may 
 4. In `doorstop_config.ini`, set `dll_search_path_override = BepInEx\unstripped_corlib`.
 5. Put `HsMod.dll` in `Hearthstone\BepInEx\plugins`, then launch.
 
-Open the settings in-game with `Esc` -> **Mod Settings**. Full steps and other platforms are in [Installation](../../wiki/Installation).
+Open the settings in-game with `Esc` -> **Mod Settings**. Full steps and other platforms are in [Installation](https://github.com/Pik-4/HsMod/wiki/Installation).
 
 ## Contents
 
