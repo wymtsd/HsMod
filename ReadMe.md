@@ -28,7 +28,7 @@ Hearthstone Modification based on BepInEx. The plugin source code is at [github.
 
 > **Warning.** The Hearthstone client in mainland China starts the anti-cheat SDK by default. The plugin will try to block the related anti-cheat functions, but it cannot guarantee the safety of your account.
 
-HsMod is based on [Simplified Chinese](https://github.com/Pik-4/HsMod/blob/bepinex5/[CHS]ReadMe.md); the English version may contain translation errors. You can edit the JSON files in `HsMod/Languages` and recompile to support your region's language. The plugin is not yet fully translated.
+HsMod primarily uses Simplified Chinese (简体中文); the English version may contain translation errors. You can edit the JSON files in `HsMod/Languages` and recompile to support your region's language. The plugin is not yet fully translated.
 
 **[Documentation Wiki](../../wiki)** covers installation, every setting, hotkeys and troubleshooting in detail.
 
